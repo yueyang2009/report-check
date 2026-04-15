@@ -6,59 +6,148 @@
 <title>审计报告验证中心 - Audit Report Check</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Microsoft YaHei,system-ui,sans-serif;background:#f7f9fa;color:#333;padding:20px}
-.container{max-width:600px;margin:50px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
-.title{text-align:center;font-size:24px;font-weight:700;margin-bottom:8px}
-.subtitle{text-align:center;color:#666;margin-bottom:30px}
-.check-box{display:flex;gap:10px;margin-bottom:20px}
-input{flex:1;padding:12px 15px;border:1px solid #ddd;border-radius:8px;font-size:16px}
-button{padding:12px 24px;background:#005bbb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer}
-button:hover{background:#004a9f}
-.result{padding:15px;border-radius:8px;margin-top:20px;font-weight:500}
-.valid{background:#e8f5e9;color:#2e7d32}
-.invalid{background:#ffebee;color:#c62828}
-.domain{text-align:center;margin-top:30px;color:#999;font-size:14px}
+body{font-family:Microsoft YaHei,system-ui,sans-serif;background:#f0f4f8;color:#333;padding:20px}
+.container{max-width:800px;margin:30px auto;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden}
+.header{background:#0a2463;color:#fff;padding:25px;text-align:center}
+.header h1{font-size:26px;font-weight:700}
+.check-area{padding:30px;border-bottom:1px solid #eee}
+.check-box{display:flex;gap:12px;max-width:600px;margin:0 auto}
+input{flex:1;padding:14px 18px;border:1px solid #d0d7e3;border-radius:8px;font-size:16px}
+button{padding:14px 28px;background:#0a2463;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:16px;cursor:pointer}
+button:hover{background:#081d4f}
+.result-area{padding:30px;display:none}
+.result-area.valid{display:block}
+.result-area.invalid{display:block;background:#fff5f5}
+.report-table{width:100%;border-collapse:collapse}
+.report-table tr{border-bottom:1px solid #eee}
+.report-table th{width:30%;background:#f8f9fa;padding:16px 20px;text-align:left;font-weight:700;font-size:16px;color:#333}
+.report-table td{padding:16px 20px;font-size:16px;color:#333}
+.invalid-tip{text-align:center;padding:40px 20px;color:#c62828;font-size:18px;font-weight:700}
+.domain-footer{text-align:center;padding:20px;color:#999;font-size:14px;background:#f8f9fa}
 </style>
 </head>
 <body>
 <div class="container">
-<div class="title">审计报告验证系统</div>
-<div class="subtitle">Audit Report Verification System</div>
+  <div class="header">
+    <h1>审计报告官方验证系统</h1>
+  </div>
 
-<div class="check-box">
-<input type="text" id="code" placeholder="请输入报告编号" />
-<button onclick="check()">立即验证</button>
-</div>
+  <div class="check-area">
+    <div class="check-box">
+      <input type="text" id="reportNo" placeholder="请输入报告编号" />
+      <button onclick="checkReport()">立即验证</button>
+    </div>
+  </div>
 
-<div id="result" class="result" style="display:none"></div>
+  <!-- 验证通过结果 -->
+  <div id="validResult" class="result-area">
+    <table class="report-table">
+      <tr>
+        <th>出具事务所</th>
+        <td id="firmName"></td>
+      </tr>
+      <tr>
+        <th>报告文号</th>
+        <td id="reportCode"></td>
+      </tr>
+      <tr>
+        <th>报告标题</th>
+        <td id="reportTitle"></td>
+      </tr>
+      <tr>
+        <th>被审计单位</th>
+        <td id="companyName"></td>
+      </tr>
+      <tr>
+        <th>报告编号</th>
+        <td id="reportNoShow"></td>
+      </tr>
+      <tr>
+        <th>签字注册会计师1</th>
+        <td id="cpa1"></td>
+      </tr>
+      <tr>
+        <th>签字注册会计师2</th>
+        <td id="cpa2"></td>
+      </tr>
+      <tr>
+        <th>报告出具时间</th>
+        <td id="reportDate"></td>
+      </tr>
+    </table>
+    <div style="text-align:center;margin-top:20px;color:#2e7d32;font-weight:700;font-size:18px;">✅ 本报告真实有效，信息与事务所存档一致</div>
+  </div>
 
-<div class="domain">官方验证域名：audit-report-check.com</div>
+  <!-- 验证失败结果 -->
+  <div id="invalidResult" class="result-area invalid">
+    <div class="invalid-tip">❌ 未查询到该报告，请核对报告编号是否正确</div>
+  </div>
+
+  <div class="domain-footer">
+    官方验证域名：audit-report-check.com | 北京鼎铭会计师事务所（普通合伙） 官方出品
+  </div>
 </div>
 
 <script>
-// 在这里添加你的报告编号
-const reportList = {
-"AR2026001": "2026年度财税健康诊断报告",
-"AR2026002": "股权架构设计合规意见书",
-"AR2026003": "虚开风险排查专项审计报告"
-"恒审审字【2026】第 F-0508 号": "2024年度审计报告"  
+// 报告数据仓库，新增报告直接在这里加一行即可
+const reportData = {
+  // 示例报告（完全匹配你提供的图片信息）
+  "17758778940160000061": {
+    firmName: "北京鼎铭会计师事务所（普通合伙）",
+    reportCode: "鼎铭审字【2026】第x829号",
+    reportTitle: "2024年度审计报告",
+    companyName: "河南中林生态环保科技有限公司",
+    reportNo: "17758778940160000061",
+    cpa1: "廉秀玉 [CPA: 110004072906]",
+    cpa2: "付艳飞 [CPA: 110001211910]",
+    reportDate: "2026-03-27"
+  },
+  // 可新增其他报告，格式完全一致
+  // "AR20260002": {
+  //   firmName: "北京鼎铭会计师事务所（普通合伙）",
+  //   reportCode: "鼎铭审字【2026】第0002号",
+  //   reportTitle: "2024年度财务报表审计报告",
+  //   companyName: "XX科技有限公司",
+  //   reportNo: "AR20260002",
+  //   cpa1: "XXX [CPA: XXXXXXXX]",
+  //   cpa2: "XXX [CPA: XXXXXXXX]",
+  //   reportDate: "2026-03-28"
+  // }
 };
 
-function check(){
-const code = document.getElementById("code").value.trim();
-const res = document.getElementById("result");
-res.style.display = "block";
+function checkReport() {
+  const inputNo = document.getElementById("reportNo").value.trim();
+  const validResult = document.getElementById("validResult");
+  const invalidResult = document.getElementById("invalidResult");
 
-if(reportList[code]){
-res.className = "result valid";
-res.innerText = `✅ 验证通过
-报告编号：${code}
-报告名称：${reportList[code]}
-本报告真实有效，可信赖。`;
-} else {
-res.className = "result invalid";
-res.innerText = "❌ 未查询到该报告，请核对编号是否正确。";
-}
+  // 重置显示状态
+  validResult.classList.remove("valid");
+  invalidResult.classList.remove("invalid");
+
+  // 校验输入
+  if (!inputNo) {
+    invalidResult.classList.add("invalid");
+    return;
+  }
+
+  // 匹配报告数据
+  const report = reportData[inputNo];
+  if (report) {
+    // 填充报告信息
+    document.getElementById("firmName").textContent = report.firmName;
+    document.getElementById("reportCode").textContent = report.reportCode;
+    document.getElementById("reportTitle").textContent = report.reportTitle;
+    document.getElementById("companyName").textContent = report.companyName;
+    document.getElementById("reportNoShow").textContent = report.reportNo;
+    document.getElementById("cpa1").textContent = report.cpa1;
+    document.getElementById("cpa2").textContent = report.cpa2;
+    document.getElementById("reportDate").textContent = report.reportDate;
+    // 显示验证通过结果
+    validResult.classList.add("valid");
+  } else {
+    // 显示验证失败结果
+    invalidResult.classList.add("invalid");
+  }
 }
 </script>
 </body>
