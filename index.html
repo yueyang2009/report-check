@@ -3,98 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>审计报告验证系统 - 官方查询</title>
+<title>审计报告验证系统</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Microsoft YaHei",Arial,sans-serif;background:#f0f2f5;padding:20px;color:#333}
-.container{max-width:900px;margin:20px auto;background:#fff;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.08);overflow:hidden}
-.header{background:#0f3460;color:#fff;padding:20px;text-align:center}
-.header h1{font-size:24px;font-weight:700}
-.subtitle{color:#e7e7e7;font-size:14px;margin-top:4px}
-.search-box{padding:25px 30px;border-bottom:1px solid #eee}
-.search-area{display:flex;gap:12px;max-width:700px;margin:0 auto}
-input{flex:1;padding:12px 16px;border:1px solid #dfe6e9;border-radius:8px;font-size:16px}
-button{padding:12px 24px;background:#0f3460;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer}
-button:hover{background:#082546}
-.result-container{padding:25px 30px;display:none}
-.result-container.valid{display:block}
-.result-container.invalid{display:block;background:#fff5f5}
-.info-table{width:100%;border-collapse:collapse}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f7fa;color:#333;padding:20px}
+.container{max-width:900px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden}
+.header{background:#0f3460;color:#fff;padding:25px;text-align:center}
+.header h1{font-size:26px}
+.main{padding:30px}
+.qr-area{text-align:center;margin-bottom:30px}
+#qrcode{margin:15px auto;border:1px solid #eee;padding:10px;background:#fff;display:inline-block}
+.info-table{width:100%;border-collapse:collapse;margin-top:20px}
 .info-table tr{border-bottom:1px solid #f0f2f5}
-.info-table th{width:22%;background:#f7f8fa;padding:14px 20px;text-align:left;font-weight:700;font-size:15px;color:#2c3e50}
-.info-table td{padding:14px 20px;font-size:15px;color:#333}
-.tip-valid{text-align:center;margin-top:20px;padding:12px;color:#27ae60;font-weight:700;background:#eafaf1;border-radius:6px}
-.tip-invalid{text-align:center;padding:30px 15px;color:#e74c3c;font-weight:700;font-size:16px}
-.footer{text-align:center;padding:18px;background:#f7f8fa;color:#7f8c8d;font-size:13px;border-top:1px solid #eee}
+.info-table th{width:25%;background:#f7f8fa;padding:14px 20px;text-align:left;font-weight:700;color:#2c3e50}
+.info-table td{padding:14px 20px;color:#333}
+.valid-tip{text-align:center;margin-top:20px;padding:12px;color:#27ae60;font-weight:700;background:#eafaf1;border-radius:6px}
+.invalid-tip{text-align:center;padding:30px;color:#e74c3c;font-weight:700}
+.footer{text-align:center;padding:20px;background:#f7f8fa;color:#7f8c8d;font-size:13px;border-top:1px solid #eee}
 </style>
+<!-- 引入二维码生成库 -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>审计报告官方验证系统</h1>
-    <div class="subtitle">Audit Report Verification System</div>
   </div>
 
-  <div class="search-box">
-    <div class="search-area">
-      <input type="text" id="reportCodeInput" placeholder="请输入报告文号查询，例如：鼎铭审字【2026】第x829号" />
-      <button onclick="queryReport()">立即查询</button>
+  <div class="main">
+    <!-- 二维码区域 -->
+    <div class="qr-area" id="qrArea" style="display:none">
+      <h3>报告查验二维码</h3>
+      <div id="qrcode"></div>
+      <p style="margin-top:10px;color:#666">微信/支付宝扫一扫，直接查验报告真伪</p>
     </div>
-  </div>
 
-  <!-- 验证通过结果区域 -->
-  <div id="validResult" class="result-container">
-    <table class="info-table">
-      <tr>
-        <th>出具事务所</th>
-        <td id="firmNameCell"></td>
-      </tr>
-      <tr>
-        <th>报告文号</th>
-        <td id="reportCodeCell"></td>
-      </tr>
-      <tr>
-        <th>报告标题</th>
-        <td id="reportTitleCell"></td>
-      </tr>
-      <tr>
-        <th>公司名称</th>
-        <td id="companyNameCell"></td>
-      </tr>
-      <tr>
-        <th>报告编号</th>
-        <td id="reportNoCell"></td>
-      </tr>
-      <tr>
-        <th>签字注册会计师1</th>
-        <td id="cpa1Cell"></td>
-      </tr>
-      <tr>
-        <th>签字注册会计师2</th>
-        <td id="cpa2Cell"></td>
-      </tr>
-      <tr>
-        <th>报告时间</th>
-        <td id="reportDateCell"></td>
-      </tr>
+    <!-- 报告信息表格 -->
+    <table class="info-table" id="reportTable" style="display:none">
+      <tr><th>出具事务所</th><td id="firmName"></td></tr>
+      <tr><th>报告文号</th><td id="reportCode"></td></tr>
+      <tr><th>报告标题</th><td id="reportTitle"></td></tr>
+      <tr><th>被审计单位</th><td id="companyName"></td></tr>
+      <tr><th>报告编号</th><td id="reportNo"></td></tr>
+      <tr><th>签字注册会计师1</th><td id="cpa1"></td></tr>
+      <tr><th>签字注册会计师2</th><td id="cpa2"></td></tr>
+      <tr><th>报告时间</th><td id="reportDate"></td></tr>
     </table>
-    <div class="tip-valid">✅ 验证通过：报告信息真实有效，与存档一致</div>
-  </div>
 
-  <!-- 验证失败结果区域 -->
-  <div id="invalidResult" class="result-container invalid">
-    <div class="tip-invalid">❌ 未查询到该报告，请核对报告文号是否输入正确</div>
+    <!-- 验证提示 -->
+    <div id="validTip" class="valid-tip" style="display:none">✅ 验证通过：报告信息真实有效，与存档一致</div>
+    <div id="invalidTip" class="invalid-tip" style="display:none">❌ 未查询到该报告，请核对报告文号</div>
   </div>
 
   <div class="footer">
-    官方验证域名：audit-report-check.com | 北京鼎铭会计师事务所（普通合伙） 版权所有
+    官方验证域名：audit-report-check.com | 河南凯诺会计师事务所（普通合伙）
   </div>
 </div>
 
 <script>
-// 报告数据库：直接按“报告文号”作为Key
-const reportDatabase = {
-  // 演示数据：完全匹配你提供的图片信息
+// 报告数据库（按【报告文号】为key）
+const reportDB = {
+  // 示例报告1
   "鼎铭审字【2026】第x829号": {
     firmName: "北京鼎铭会计师事务所（普通合伙）",
     reportCode: "鼎铭审字【2026】第x829号",
@@ -105,52 +74,63 @@ const reportDatabase = {
     cpa2: "付艳飞 [CPA: 110001211910]",
     reportDate: "2026-03-27"
   },
-  // 示例：可直接新增其他报告
-  // "鼎铭审字【2026】第0002号": {
-  //   firmName: "北京鼎铭会计师事务所（普通合伙）",
-  //   reportCode: "鼎铭审字【2026】第0002号",
-  //   reportTitle: "2023年度审计报告",
-  //   companyName: "XXXXX有限公司",
-  //   reportNo: "17758778940160000062",
-  //   cpa1: "张三 [CPA: 110000000001]",
-  //   cpa2: "李四 [CPA: 110000000002]",
-  //   reportDate: "2026-04-01"
-  // }
+  // 示例报告2（新增格式）
+  "鼎铭审字【2026】第0002号": {
+    firmName: "北京鼎铭会计师事务所（普通合伙）",
+    reportCode: "鼎铭审字【2026】第0002号",
+    reportTitle: "2024年度审计报告",
+    companyName: "XX科技有限公司",
+    reportNo: "17758778940160000062",
+    cpa1: "张三 [CPA: 110000000001]",
+    cpa2: "李四 [CPA: 110000000002]",
+    reportDate: "2026-04-01"
+  }
+  // 新增报告：直接复制上面结构，改内容即可
 };
 
-function queryReport() {
-  const inputCode = document.getElementById("reportCodeInput").value.trim();
-  const validBox = document.getElementById("validResult");
-  const invalidBox = document.getElementById("invalidResult");
+// 页面加载时自动解析URL参数
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code'); // 从链接获取报告文号
+  
+  if(code) {
+    showReport(code); // 直接显示报告信息+二维码
+  } else {
+    document.getElementById('invalidTip').style.display = 'block';
+  }
+};
 
-  // 重置显示状态
-  validBox.classList.remove("valid");
-  invalidBox.classList.remove("invalid");
-
-  if (!inputCode) {
-    invalidBox.classList.add("invalid");
+// 显示报告信息和二维码
+function showReport(reportCode) {
+  const report = reportDB[reportCode];
+  if(!report) {
+    document.getElementById('invalidTip').style.display = 'block';
     return;
   }
 
-  // 查找报告
-  const targetReport = reportDatabase[inputCode];
+  // 填充表格数据
+  document.getElementById('firmName').textContent = report.firmName;
+  document.getElementById('reportCode').textContent = report.reportCode;
+  document.getElementById('reportTitle').textContent = report.reportTitle;
+  document.getElementById('companyName').textContent = report.companyName;
+  document.getElementById('reportNo').textContent = report.reportNo;
+  document.getElementById('cpa1').textContent = report.cpa1;
+  document.getElementById('cpa2').textContent = report.cpa2;
+  document.getElementById('reportDate').textContent = report.reportDate;
+
+  // 显示表格和提示
+  document.getElementById('reportTable').style.display = 'table';
+  document.getElementById('validTip').style.display = 'block';
   
-  if (targetReport) {
-    // 填充数据
-    document.getElementById("firmNameCell").textContent = targetReport.firmName;
-    document.getElementById("reportCodeCell").textContent = targetReport.reportCode;
-    document.getElementById("reportTitleCell").textContent = targetReport.reportTitle;
-    document.getElementById("companyNameCell").textContent = targetReport.companyName;
-    document.getElementById("reportNoCell").textContent = targetReport.reportNo;
-    document.getElementById("cpa1Cell").textContent = targetReport.cpa1;
-    document.getElementById("cpa2Cell").textContent = targetReport.cpa2;
-    document.getElementById("reportDateCell").textContent = targetReport.reportDate;
-    // 显示通过
-    validBox.classList.add("valid");
-  } else {
-    // 显示失败
-    invalidBox.classList.add("invalid");
-  }
+  // 生成专属二维码（链接带code参数）
+  const qrUrl = `https://audit-report-check.com?code=${encodeURIComponent(reportCode)}`;
+  QRCode.toCanvas(document.getElementById('qrcode'), qrUrl, {
+    width: 200,
+    margin: 1
+  }, function (error) {
+    if (error) console.error(error)
+  });
+  document.getElementById('qrArea').style.display = 'block';
 }
 </script>
 </body>
