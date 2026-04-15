@@ -82,8 +82,8 @@ button:hover{background:#082546}
   </div>
 
   <!-- 验证失败结果区域 -->
-  <div id="invalidResult" class="result-container invalid">
-    <div class="tip-invalid"> </div>
+  <div id="invalidResult" class="result-container">
+    <div class="tip-invalid" id="errorTip">❌ 未查询到该报告信息，请确认报告文号是否正确</div>
   </div>
 
   <div class="footer">
@@ -122,12 +122,15 @@ function queryReport() {
   const inputCode = document.getElementById("reportCodeInput").value.trim();
   const validBox = document.getElementById("validResult");
   const invalidBox = document.getElementById("invalidResult");
+  const errorTip = document.getElementById("errorTip");
 
-  // 重置显示状态
+  // 重置所有显示状态
   validBox.classList.remove("valid");
   invalidBox.classList.remove("invalid");
 
+  // 空输入判断
   if (!inputCode) {
+    errorTip.textContent = "⚠️ 请输入报告文号后再进行查询";
     invalidBox.classList.add("invalid");
     return;
   }
@@ -145,10 +148,12 @@ function queryReport() {
     document.getElementById("cpa1Cell").textContent = targetReport.cpa1;
     document.getElementById("cpa2Cell").textContent = targetReport.cpa2;
     document.getElementById("reportDateCell").textContent = targetReport.reportDate;
-    // 显示通过
+    
+    // 显示成功
     validBox.classList.add("valid");
   } else {
     // 显示失败
+    errorTip.textContent = "❌ 未查询到该报告信息，请确认报告文号是否正确";
     invalidBox.classList.add("invalid");
   }
 }
