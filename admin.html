@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>审计报告 - 后台管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f0f2f5;padding:20px;color:#333}
+.container{max-width:800px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.08);padding:30px}
+h1{color:#0f3460;margin-bottom:20px;font-size:24px;text-align:center}
+.form-group{margin-bottom:20px}
+label{display:block;margin-bottom:8px;font-weight:600;color:#333}
+input,textarea{width:100%;padding:12px 15px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+button{background:#0f3460;color:#fff;border:none;padding:14px 20px;border-radius:8px;font-weight:700;cursor:pointer;width:100%;font-size:16px}
+button:hover{background:#082546}
+.qr-box{text-align:center;margin:30px 0}
+#qrcode{display:inline-block;border:1px solid #eee;padding:10px;background:#fff}
+.link-box{background:#f7f8fa;padding:15px;border-radius:8px;margin:20px 0}
+.link-box strong{color:#0f3460}
+.copy-btn{background:#27ae60;margin-top:10px}
+.tip{color:#666;font-size:14px;text-align:center;margin-top:10px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>🔒 审计报告后台管理</h1>
+  <div class="form-group">
+    <label>报告文号（必填）</label>
+    <input type="text" id="reportCode" placeholder="例如：鼎铭审字【2026】第x829号">
+  </div>
+  <button onclick="generateQR()">生成查验二维码</button>
+  <div class="qr-box" id="qrBox" style="display:none">
+    <h3>报告查验二维码</h3>
+    <div id="qrcode"></div>
+    <div class="link-box">
+      <strong>查验链接：</strong>
+      <div id="reportLink"></div>
+      <button class="copy-btn" onclick="copyLink()">复制链接</button>
+    </div>
+    <div class="tip">右键二维码 → 图片另存为，可打印到报告上</div>
+  </div>
+</div>
+<script>
+function generateQR() {
+  const code = document.getElementById('reportCode').value.trim();
+  if(!code) { alert('请输入报告文号'); return; }
+  const link = `https://audit-report-check.com?code=${encodeURIComponent(code)}`;
+  document.getElementById('reportLink').textContent = link;
+  document.getElementById('qrBox').style.display = 'block';
+  QRCode.toCanvas(document.getElementById('qrcode'), link, {width:220,margin:1}, error => {
+    if(error) console.error(error)
+  });
+}
+function copyLink() {
+  const linkText = document.getElementById('reportLink').textContent;
+  navigator.clipboard.writeText(linkText).then(() => {
+    alert('链接已复制！');
+  }).catch(err => {
+    console.error(err);
+    alert('复制失败，请手动复制');
+  });
+}
+</script>
+</body>
+</html>
