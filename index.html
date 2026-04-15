@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>审计报告验证中心 - Audit Report Check</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Microsoft YaHei,system-ui,sans-serif;background:#f7f9fa;color:#333;padding:20px}
+.container{max-width:600px;margin:50px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.title{text-align:center;font-size:24px;font-weight:700;margin-bottom:8px}
+.subtitle{text-align:center;color:#666;margin-bottom:30px}
+.check-box{display:flex;gap:10px;margin-bottom:20px}
+input{flex:1;padding:12px 15px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+button{padding:12px 24px;background:#005bbb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+button:hover{background:#004a9f}
+.result{padding:15px;border-radius:8px;margin-top:20px;font-weight:500}
+.valid{background:#e8f5e9;color:#2e7d32}
+.invalid{background:#ffebee;color:#c62828}
+.domain{text-align:center;margin-top:30px;color:#999;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="title">审计报告验证系统</div>
+<div class="subtitle">Audit Report Verification System</div>
+
+<div class="check-box">
+<input type="text" id="code" placeholder="请输入报告编号" />
+<button onclick="check()">立即验证</button>
+</div>
+
+<div id="result" class="result" style="display:none"></div>
+
+<div class="domain">官方验证域名：audit-report-check.com</div>
+</div>
+
+<script>
+// 在这里添加你的报告编号
+const reportList = {
+"AR2026001": "2026年度财税健康诊断报告",
+"AR2026002": "股权架构设计合规意见书",
+"AR2026003": "虚开风险排查专项审计报告"
+};
+
+function check(){
+const code = document.getElementById("code").value.trim();
+const res = document.getElementById("result");
+res.style.display = "block";
+
+if(reportList[code]){
+res.className = "result valid";
+res.innerText = `✅ 验证通过
+报告编号：${code}
+报告名称：${reportList[code]}
+本报告真实有效，可信赖。`;
+} else {
+res.className = "result invalid";
+res.innerText = "❌ 未查询到该报告，请核对编号是否正确。";
+}
+}
+</script>
+</body>
+</html>
