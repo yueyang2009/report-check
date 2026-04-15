@@ -42,19 +42,50 @@ button:hover{background:#082546}
     <div class="tip">右键二维码 → 图片另存为，可打印到报告上</div>
   </div>
 </div>
+
 <script>
 function generateQR() {
   const code = document.getElementById('reportCode').value.trim();
-  if(!code) { alert('请输入报告文号'); return; }
+  const qrcodeContainer = document.getElementById('qrcode');
+  const linkBox = document.getElementById('reportLink');
+  const qrBox = document.getElementById('qrBox');
+
+  // 清空上一次的二维码 + 链接
+  qrcodeContainer.innerHTML = "";
+  linkBox.textContent = "";
+
+  if(!code) { 
+    alert('请输入报告文号'); 
+    qrBox.style.display = 'none';
+    return; 
+  }
+
   const link = `https://audit-report-check.com?code=${encodeURIComponent(code)}`;
-  document.getElementById('reportLink').textContent = link;
-  document.getElementById('qrBox').style.display = 'block';
-  QRCode.toCanvas(document.getElementById('qrcode'), link, {width:220,margin:1}, error => {
-    if(error) console.error(error)
+  linkBox.textContent = link;
+  qrBox.style.display = 'block';
+
+  // 生成二维码（修复重复生成问题）
+  QRCode.toCanvas(qrcodeContainer, link, {
+    width: 220,
+    margin: 1,
+    color: {
+      dark: "#0f3460",
+      light: "#ffffff"
+    }
+  }, error => {
+    if(error) {
+      console.error('二维码生成失败：', error);
+      alert('二维码生成失败，请刷新重试');
+    }
   });
 }
+
 function copyLink() {
   const linkText = document.getElementById('reportLink').textContent;
+  if(!linkText){
+    alert('暂无链接可复制');
+    return;
+  }
   navigator.clipboard.writeText(linkText).then(() => {
     alert('链接已复制！');
   }).catch(err => {
